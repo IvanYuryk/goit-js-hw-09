@@ -1,32 +1,37 @@
-const form = document.querySelector('.feedback');
-form.addEventListener('submit', handleSubmit);
-form.addEventListener('input', saveDataInLocal);
-let saveData = {};
+const form = document.querySelector('.feedback-form');
 
-if (localStorage.getItem('feedback-status')) {
-    saveData = JSON.parse(localStorage.getItem('feedback-status'));
-    for (let key in saveData) {
-        form.elements[key].value = saveData[key];
+window.addEventListener('load', () => {
+    const savedData = localStorage.getItem('feedback-form-state');
+    if (savedData) {
+        const { email, message } = JSON.parse(savedData);
+        if (email) {
+            form.elements.email.value = email;
+        }
+        if (message) {
+            form.elements.message.value = message;
+        }
     }
-}
+});
 
-function saveDataInLocal({ target: { value, name } }) {
-    saveData[name] = value.trim();
-    localStorage.setItem('feedback-status', JSON.stringify(saveData));
-}
+form.addEventListener('input', (event) => {
+    const { value, name } = event.target;
+    localStorage.setItem('feedback-form-state', JSON.stringify({
+        ...JSON.parse(localStorage.getItem('feedback-form-state')),
+        [name]: value.trim(),
+    }));
+});
 
-function handleSubmit(event) {
+form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const form = event.target;
-    const email = form.elements.email.value;
-    const message = form.elements.message.value;
 
-    if (email.trim() !== "" && message.trim() !== "") {
-        const userCredentials = {};
-        userCredentials.email = email;
-        userCredentials.message = message;
+    const email = form.elements.email.value.trim();
+    const message = form.elements.message.value.trim();
+
+    if (email && message) {
+        const userCredentials = { email, message };
         console.log(userCredentials);
-        localStorage.removeItem('feedback-status');
+
+        localStorage.removeItem('feedback-form-state');
         form.reset();
     }
-};
+});
